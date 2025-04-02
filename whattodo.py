@@ -6,8 +6,7 @@ from datetime import datetime
 
 def find_todos(path, file_extensions):
     todos = []
-    todo_pattern = re.compile(r'(?:^|\s)(?:#|//)\s*(?:TODO|todo)[\s:-](.+)', re.IGNORECASE)
-
+    todo_pattern = re.compile(r'#+\s*(?:TODO|todo)[\s:-](.+)', re.IGNORECASE)
     for root, _, files in os.walk(path):
         for file in files:
             if file.endswith(tuple(file_extensions)):
@@ -27,6 +26,7 @@ def find_todos(path, file_extensions):
                                 'scope': scope,
                                 'modified': datetime.fromtimestamp(os.path.getmtime(file_path))
                             })
+                            print(f"Found todo in {file_path} at line {i} with scope {scope}")
     return todos
 
 def find_scope(lines):
@@ -36,6 +36,10 @@ def find_scope(lines):
     return 'main'
 
 def output_todos(todos, output_file):
+    if not todos:
+        print("No TODOs found")
+        return
+        
     if not output_file:
         for todo in todos:
             print(f"File: {todo['file']}")
@@ -45,20 +49,23 @@ def output_todos(todos, output_file):
             print(f"Scope: {todo['scope']}")
             print(f"Modified: {todo['modified']}")
             print()
-    elif output_file.endswith('.tsv'):
-        with open(output_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=todos[0].keys(), delimiter='\t')
-            writer.writeheader()
-            writer.writerows(todos)
-    elif output_file.endswith('.md'):
-        with open(output_file, 'w') as f:
-            for todo in todos:
-                f.write(f"- **File:** {todo['file']}\n")
-                f.write(f"  - Path: {todo['path']}\n")
-                f.write(f"  - TODO: {todo['todo']}\n")
-                f.write(f"  - Context: {todo['context']}\n")
-                f.write(f"  - Scope: {todo['scope']}\n")
-                f.write(f"  - Modified: {todo['modified']}\n\n")
+    else:
+        # Default to TSV if extension isn't .md
+        if output_file.endswith('.md'):
+            with open(output_file, 'w') as f:
+                for todo in todos:
+                    f.write(f"- **File:** {todo['file']}\n")
+                    f.write(f"  - Path: {todo['path']}\n")
+                    f.write(f"  - TODO: {todo['todo']}\n")
+                    f.write(f"  - Context: {todo['context']}\n")
+                    f.write(f"  - Scope: {todo['scope']}\n")
+                    f.write(f"  - Modified: {todo['modified']}\n\n")
+        else:
+            # Use TSV format for all other cases
+            with open(output_file, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=todos[0].keys(), delimiter='\t')
+                writer.writeheader()
+                writer.writerows(todos)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Find TODO comments in code files.')
