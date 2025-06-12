@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "what2do"
+dynamic = ["version"]
+description = "Find TODO comments in code files"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+authors = [
+    { name = "Uri Neri", email = "uri.neri@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Utilities",
+]
+keywords = ["todo", "comments", "code", "analysis", "development"]
+
+[project.urls]
+Homepage = "https://github.com/urineri/what2do"
+Repository = "https://github.com/urineri/what2do"
+Issues = "https://github.com/urineri/what2do/issues"
+
+[project.scripts]
+what2do = "what2do.cli:main"
+
+[tool.hatch.version]
+path = "src/what2do/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/what2do"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[tool.pixi.dependencies]
+python = ">=3.8"
+hatch = "*"
+twine = "*"
+
+[tool.pixi.tasks]
+publish-pypi = "twine upload dist/* --verbose"
+build-pypi = "hatch version micro && hatch build --clean" 
